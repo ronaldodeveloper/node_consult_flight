@@ -5,7 +5,7 @@ const port= process.env.PORT || 5010
 // variable ambient
 require('dotenv').config()
 
-// conexão com o servidor
+// conexão com o DB
 const { Pool } = require('pg')
 const pool = new Pool({
     host: process.env.PGHOST,
@@ -27,20 +27,35 @@ app.get('/', (req, res)=>{
 })
 
 // API
-app.get('/api', async(req, res)=>{
+app.get('/flights', async(req, res)=>{
+    try {
+        const api= await pool.query(`select * from vooAgendados`)
+        res.json(api.rows) 
+    } catch (error) {
+        console.log('ERROR AO CONECTAR COM O DB', error)
+    }
+})
+
+// ********* Endpoint de consulta
+app.get('/flights/:from', async(req, res)=>{
+
      try {
-         const api= await pool.query(`select * from vooAgendados`)
-         res.json(api.rows) 
+         const api= await pool.query(`select * from vooAgendados 
+         where cidadedepartida= '${req.params.from}'`)
+         res.json(api.rows)
      } catch (error) {
          console.log('ERROR AO CONECTAR COM O DB', error)
      }
 })
 
+
 // POST 
-app.post('/api/add', async (req,res)=>{
+app.post('/flights', async (req,res)=>{
     try {
 
-    const {cidadedepartida, cidadedestino, datahora, companhiaaerea} = req.body    
+    const {cidadedepartida, cidadedestino, data, hora, companhiaaerea} = req.body  
+    const datahora= data + ' ' + hora;
+     
     const sql= `INSERT INTO vooAgendados (cidadedepartida, cidadedestino, datahora, companhiaaerea) 
     values ('${cidadedepartida}', '${cidadedestino}', '${datahora}', '${companhiaaerea}')`
     const addItems= await pool.query(sql)
