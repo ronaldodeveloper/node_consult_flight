@@ -1,8 +1,6 @@
 const express= require('express')
 const app= express()
 const port= process.env.PORT || 5010
-
-// variable ambient
 require('dotenv').config()
 
 // conexão com o DB
@@ -20,13 +18,11 @@ app.use(express.static('public'))
 app.use(express.urlencoded({extend:true}))
 app.use(express.json())
 
-
-// APLICATION
+// ********* Endpoint de consultas
 app.get('/', (req, res)=>{
     res.sendFile('index.html')
 })
 
-// API
 app.get('/flights', async(req, res)=>{
     try {
         const api= await pool.query(`select * from vooAgendados`)
@@ -36,7 +32,6 @@ app.get('/flights', async(req, res)=>{
     }
 })
 
-// ********* Endpoint de consulta
 app.get('/flights/:from', async(req, res)=>{
 
      try {
@@ -48,29 +43,24 @@ app.get('/flights/:from', async(req, res)=>{
      }
 })
 
-
 // POST 
-app.post('/flights', async (req,res)=>{
+app.post('/flights', async (req, res)=>{
     try {
-
-    const {cidadedepartida, cidadedestino, data, hora, companhiaaerea} = req.body  
-    const datahora= data + ' ' + hora;
+    const {cidadedepartida, cidadedestino, date, hora, companhiaaerea} = req.body  
+    const datahora= date + ' ' + hora;
      
     const sql= `INSERT INTO vooAgendados (cidadedepartida, cidadedestino, datahora, companhiaaerea) 
     values ('${cidadedepartida}', '${cidadedestino}', '${datahora}', '${companhiaaerea}')`
     const addItems= await pool.query(sql)
      res.redirect('/')
-
     }catch (error) {
       throw error
     }
 })
 
-
-
 app.listen(port, (err) => {
      if(!err){
-         console.log('SERVER ON', `http://localhost:${port}`)
+         console.log(`SERVER ON http://localhost:${port}`)
      }else{
          throw err
      }
